@@ -31,12 +31,12 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,.railway.app").split(",")
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS]
 
 # Railway 等平台需要設定，否則表單/登入會 403
 CSRF_TRUSTED_ORIGINS = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", "http://localhost:8000"
+    "CSRF_TRUSTED_ORIGINS", "http://localhost:8000,https://*.railway.app"
 ).split(",")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS]
 
