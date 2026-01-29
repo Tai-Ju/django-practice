@@ -1,0 +1,26 @@
+ {% load static %} 
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歡迎頁面</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">{{ title }}</h1>
+        <p class="subtitle">{{ subtitle }}</p>
+        <img src="{% static 'image/'|add:image %}">
+        <div class="products">
+            {% for product in products %}
+                <div class="product">
+                    <img src="{% static 'image/'|add:product.image %}">
+                    <h2>{{ product.name }}</h2>
+                    <p>{{ product.price }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
