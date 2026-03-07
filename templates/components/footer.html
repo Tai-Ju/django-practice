@@ -1,0 +1,11 @@
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-links">
+            <a href="{% url 'ecommerce:hello' %}">首頁</a>
+            <a href="{% url 'ecommerce:home' %}">商品首頁</a>
+            <a href="{% url 'ecommerce:product' %}">商品列表</a>
+            <a href="{% url 'ecommerce:home2' %}">更多</a>
+        </div>
+        <p class="footer-copyright">&copy; {% now "Y" %} 電商小站 · 僅供學習使用</p>
+    </div>
+</footer>

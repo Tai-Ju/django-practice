@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import render
+from .models import Product
 
 # Create your views here.
 def hello(request):
@@ -53,3 +54,15 @@ def home2(request):
         "last_update": datetime.now(),
     }
     return render(request, "home2.html", context)
+    
+def member(request):
+    return render(request, "member.html")
+
+def product(request):
+    # products = Product.objects.all()
+    products = Product.objects.get(id=3)
+
+    context = {
+        "products": products,
+    }
+    return render(request, "product.html", context)

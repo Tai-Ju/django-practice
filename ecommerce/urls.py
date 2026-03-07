@@ -4,8 +4,9 @@ from . import views
 app_name = 'ecommerce'
 
 urlpatterns = [
-    # 在这里添加你的 URL 模式
-    path("",views.hello),
-    path("home/",views.home),
-    path("home2/",views.home2),
+    path("", views.hello, name="hello"),
+    path("home/", views.home, name="home"),
+    path("home2/", views.home2, name="home2"),
+    path("member/", views.member, name="member"),
+    path("product/", views.product, name="product"),
 ]

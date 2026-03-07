@@ -8,6 +8,10 @@ __pycache__/
 venv/
 ENV/
 env/
+*.egg-info/
+dist/
+build/
+*.egg
 
 # Django
 *.log
@@ -16,11 +20,17 @@ db.sqlite3
 db.sqlite3-journal
 staticfiles/
 media/
+*.pot
 
 # 環境變數（勿上傳密鑰）
 .env
 .env.local
 *.env
+
+# 測試 / 覆蓋率
+.coverage
+htmlcov/
+.pytest_cache/
 
 # IDE
 .idea/
@@ -31,3 +41,4 @@ media/
 # OS
 .DS_Store
 Thumbs.db
+*.lnk

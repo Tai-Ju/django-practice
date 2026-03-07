@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">商品一覽</h1>
+    <p class="page-subtitle">全部 {{ products|length }} 件商品</p>
+
+    <div class="product-grid">
+ 
+        <article class="product-card">
+            <div class="product-card-placeholder">🛒</div>
+            <div class="product-card-body">
+                <h2>{{ products.name }}</h2>
+                <p class="description">{{ products.description }}</p>
+                <div class="meta">
+                    <span class="price">NT$ {{ products.price }}</span>
+                    <span class="date">{{ products.created_at|date:"Y/m/d" }}</span>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+{% endblock %}
