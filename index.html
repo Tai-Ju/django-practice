@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>電商小站 — Django Practice | Tai-Ju Liu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c10;
+  --surface: #0e1419;
+  --card: #131a22;
+  --border: #1e2d3d;
+  --accent: #00d4aa;
+  --accent2: #0088ff;
+  --accent3: #ff6b35;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --dim: #334155;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ── Noise texture overlay ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: .4;
+}
+
+/* ── Grid lines ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,170,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,170,.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 48px;
+  background: rgba(8,12,16,.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,212,170,.1);
+}
+
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 16px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--muted);
+  text-decoration: none; letter-spacing: 1px;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+.nav-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 4px 12px; border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  padding: 120px 48px 80px;
+  position: relative; z-index: 1;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--accent);
+  letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.hero-label::before {
+  content: ''; display: block;
+  width: 40px; height: 1px; background: var(--accent);
+}
+
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(52px, 8vw, 96px);
+  font-weight: 800; line-height: .95;
+  margin-bottom: 8px;
+  letter-spacing: -2px;
+}
+
+.hero h1 .line1 { color: var(--text); }
+.hero h1 .line2 {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--accent);
+  display: block;
+}
+
+.hero-sub {
+  font-size: 16px; color: var(--muted);
+  line-height: 1.7; max-width: 480px;
+  margin: 28px 0 48px;
+}
+
+.hero-cta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+
+.btn-primary {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 500;
+  background: var(--accent); color: #000;
+  padding: 14px 32px; border-radius: 2px;
+  text-decoration: none; letter-spacing: 1px;
+  transition: all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { background: #00ffcc; transform: translateY(-2px); }
+
+.btn-ghost {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 400;
+  border: 1px solid var(--border); color: var(--muted);
+  padding: 14px 32px; border-radius: 2px;
+  text-decoration: none; letter-spacing: 1px;
+  transition: all .2s;
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* hero deco */
+.hero-deco {
+  position: absolute; right: 48px; top: 50%;
+  transform: translateY(-50%);
+  width: 420px; height: 420px;
+  opacity: .12;
+}
+.hero-deco svg { width: 100%; height: 100%; }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: flex; gap: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 1;
+  overflow: hidden;
+}
+.stat {
+  flex: 1; padding: 28px 40px;
+  border-right: 1px solid var(--border);
+  transition: background .3s;
+}
+.stat:last-child { border-right: none; }
+.stat:hover { background: var(--card); }
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px; font-weight: 800;
+  color: var(--accent); line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+/* ── SECTION ── */
+section { position: relative; z-index: 1; padding: 100px 48px; }
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--accent);
+  letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::before {
+  content: attr(data-num);
+  font-size: 10px; color: var(--dim);
+}
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700; margin-bottom: 56px;
+  letter-spacing: -1px;
+}
+
+/* ── FEATURES ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.feature-card {
+  background: var(--card);
+  padding: 36px 32px;
+  transition: background .3s;
+  position: relative; overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .4s;
+}
+.feature-card:hover::before { transform: scaleX(1); }
+.feature-card:hover { background: #161f2a; }
+
+.feature-icon {
+  width: 44px; height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 20px;
+  background: var(--surface);
+}
+
+.feature-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 10px; letter-spacing: -.3px;
+}
+
+.feature-desc {
+  font-size: 14px; color: var(--muted);
+  line-height: 1.7;
+}
+
+/* ── ROUTES TABLE ── */
+.routes-section { background: var(--surface); }
+
+.route-table {
+  width: 100%; border-collapse: collapse;
+  font-family: 'JetBrains Mono', monospace;
+}
+.route-table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+.route-table th {
+  text-align: left; padding: 12px 20px;
+  font-size: 11px; color: var(--dim);
+  text-transform: uppercase; letter-spacing: 1px;
+  font-weight: 500;
+}
+.route-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(30,45,61,.5);
+  font-size: 13px;
+  transition: background .2s;
+}
+.route-table tr:hover td { background: rgba(0,212,170,.03); }
+.route-path { color: var(--accent2); }
+.route-desc { color: var(--muted); font-family: 'Noto Sans TC', sans-serif; font-size: 14px; }
+.route-method {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 2px;
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 1px;
+}
+.method-get { background: rgba(0,212,170,.1); color: var(--accent); }
+.method-post { background: rgba(255,107,53,.1); color: var(--accent3); }
+.method-admin { background: rgba(0,136,255,.1); color: var(--accent2); }
+
+/* ── TECH STACK ── */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.tech-card {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 24px 20px;
+  background: var(--card);
+  display: flex; align-items: center; gap: 16px;
+  transition: all .25s;
+}
+.tech-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,212,170,.08);
+}
+
+.tech-icon {
+  font-size: 28px; width: 44px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.tech-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 3px;
+}
+.tech-ver {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+}
+
+/* ── INSTALL ── */
+.install-steps {
+  display: flex; flex-direction: column; gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+}
+
+.install-step {
+  display: flex; align-items: flex-start; gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.install-step:last-child { border-bottom: none; }
+
+.step-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 800;
+  color: var(--accent); min-width: 60px;
+  padding: 28px 24px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; align-items: flex-start;
+  justify-content: center;
+}
+
+.step-body { padding: 24px 32px; flex: 1; }
+
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; line-height: 1.8;
+  color: #a8c4e0; overflow-x: auto;
+  margin-top: 12px;
+}
+.code-block .comment { color: var(--dim); }
+.code-block .cmd { color: var(--accent); }
+.code-block .flag { color: var(--accent3); }
+
+/* ── MOCK UI ── */
+.mock-wrap {
+  border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,.6);
+}
+.mock-bar {
+  background: #1a2332;
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mock-dot.r { background: #ff5f57; }
+.mock-dot.y { background: #febc2e; }
+.mock-dot.g { background: #28c840; }
+.mock-url {
+  flex: 1; margin-left: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+}
+
+.mock-content {
+  background: var(--surface);
+  padding: 0;
+}
+
+/* mock navbar */
+.mock-nav {
+  background: #0a1520;
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.mock-logo-txt {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px; font-weight: 800; color: var(--accent);
+}
+.mock-nav-links {
+  display: flex; gap: 24px;
+}
+.mock-nav-link {
+  font-size: 12px; color: var(--muted);
+  background: rgba(0,212,170,.06);
+  padding: 4px 12px; border-radius: 2px;
+}
+
+/* mock hero area */
+.mock-hero {
+  padding: 48px 28px 40px;
+  background: linear-gradient(160deg, #0a1520 0%, #0d1f2d 100%);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+  align-items: center;
+}
+.mock-hero-text {}
+.mock-h1-sm {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--text);
+  margin-bottom: 10px; line-height: 1.2;
+}
+.mock-p-sm {
+  font-size: 11px; color: var(--muted); line-height: 1.6;
+  margin-bottom: 16px;
+}
+.mock-btn-sm {
+  display: inline-block;
+  background: var(--accent); color: #000;
+  font-size: 10px; font-weight: 700;
+  padding: 8px 18px; border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* mock product cards */
+.mock-products { padding: 28px; }
+.mock-prod-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 700;
+  color: var(--muted); margin-bottom: 16px;
+  text-transform: uppercase; letter-spacing: 2px;
+}
+.mock-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.mock-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+}
+.mock-card-img {
+  height: 90px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+}
+.mock-card-body { padding: 10px 12px; }
+.mock-card-name {
+  font-size: 11px; font-weight: 500;
+  margin-bottom: 4px;
+}
+.mock-card-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--accent);
+}
+
+/* image bg colors */
+.bg1 { background: linear-gradient(135deg,#1a2a3a,#0d1f2d); }
+.bg2 { background: linear-gradient(135deg,#1a1a2a,#0d0d1f); }
+.bg3 { background: linear-gradient(135deg,#2a1a1a,#1f0d0d); }
+.bg4 { background: linear-gradient(135deg,#1a2a1a,#0d1f0d); }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border);
+  padding: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-left {}
+.footer-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800;
+  color: var(--accent); margin-bottom: 4px;
+}
+.footer-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+  letter-spacing: 1px;
+}
+.footer-links { display: flex; gap: 20px; }
+.footer-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--muted);
+  text-decoration: none; letter-spacing: 1px;
+  transition: color .2s;
+}
+.footer-link:hover { color: var(--accent); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%,100% { opacity: .5; }
+  50% { opacity: 1; }
+}
+
+.hero-label { animation: fadeUp .6s ease both; }
+.hero h1    { animation: fadeUp .6s .1s ease both; }
+.hero-sub   { animation: fadeUp .6s .2s ease both; }
+.hero-cta   { animation: fadeUp .6s .3s ease both; }
+
+.stat { animation: fadeUp .5s ease both; }
+.stat:nth-child(1) { animation-delay: .1s; }
+.stat:nth-child(2) { animation-delay: .2s; }
+.stat:nth-child(3) { animation-delay: .3s; }
+.stat:nth-child(4) { animation-delay: .4s; }
+
+/* rotating deco ring */
+.deco-ring {
+  animation: spin 20s linear infinite;
+  transform-origin: center;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .hero { padding: 100px 24px 60px; }
+  .hero-deco { display: none; }
+  section { padding: 72px 24px; }
+  .stats-bar { flex-direction: column; }
+  .stat { border-right: none; border-bottom: 1px solid var(--border); }
+  footer { flex-direction: column; gap: 24px; padding: 32px 24px; }
+  .mock-hero { grid-template-columns: 1fr; }
+  .mock-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">電商小站</div>
+  <ul class="nav-links">
+    <li><a href="#features">功能</a></li>
+    <li><a href="#routes">路由</a></li>
+    <li><a href="#tech">技術</a></li>
+    <li><a href="#install">安裝</a></li>
+  </ul>
+  <span class="nav-badge">Django Practice</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Tai-Ju Liu · 2025</div>
+  <h1>
+    <span class="line1">電商</span>
+    <span class="line2">小站</span>
+  </h1>
+  <p class="hero-sub">
+    以 Django 打造的簡易電商前端專案，包含首頁、商品列表、會員頁、Django Admin 後台管理。適合作為 Django 全端開發入門練習。
+  </p>
+  <div class="hero-cta">
+    <a href="https://github.com/Tai-Ju/django-practice" class="btn-primary" target="_blank">
+      ↗ GitHub Repo
+    </a>
+    <a href="#install" class="btn-ghost">本地運行 →</a>
+  </div>
+
+  <!-- deco SVG -->
+  <div class="hero-deco">
+    <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="200" cy="200" r="180" stroke="#00d4aa" stroke-width=".5"/>
+      <circle cx="200" cy="200" r="140" stroke="#00d4aa" stroke-width=".5" stroke-dasharray="4 8"/>
+      <circle cx="200" cy="200" r="100" stroke="#0088ff" stroke-width=".5"/>
+      <circle cx="200" cy="200" r="60"  stroke="#0088ff" stroke-width=".5" stroke-dasharray="2 6"/>
+      <g class="deco-ring">
+        <circle cx="200" cy="20"  r="4" fill="#00d4aa"/>
+        <circle cx="200" cy="380" r="4" fill="#00d4aa"/>
+        <circle cx="20"  cy="200" r="4" fill="#0088ff"/>
+        <circle cx="380" cy="200" r="4" fill="#0088ff"/>
+      </g>
+      <line x1="200" y1="0" x2="200" y2="400" stroke="#00d4aa" stroke-width=".3"/>
+      <line x1="0" y1="200" x2="400" y2="200" stroke="#00d4aa" stroke-width=".3"/>
+      <rect x="175" y="175" width="50" height="50" stroke="#00d4aa" stroke-width=".8" transform="rotate(45 200 200)"/>
+    </svg>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-num">5+</div>
+    <div class="stat-label">頁面 / 路由</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">Django</div>
+    <div class="stat-label">核心框架</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">SQLite</div>
+    <div class="stat-label">開發資料庫</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">Railway</div>
+    <div class="stat-label">部署平台</div>
+  </div>
+</div>
+
+<!-- MOCK UI PREVIEW -->
+<section>
+  <div class="section-label" data-num="00">Preview</div>
+  <div class="section-title">介面預覽</div>
+  <div class="mock-wrap">
+    <div class="mock-bar">
+      <div class="mock-dot r"></div>
+      <div class="mock-dot y"></div>
+      <div class="mock-dot g"></div>
+      <div class="mock-url">http://127.0.0.1:8000/ecommerce/</div>
+    </div>
+    <div class="mock-content">
+      <div class="mock-nav">
+        <div class="mock-logo-txt">電商小站</div>
+        <div class="mock-nav-links">
+          <div class="mock-nav-link">首頁</div>
+          <div class="mock-nav-link">商品</div>
+          <div class="mock-nav-link">會員</div>
+        </div>
+      </div>
+      <div class="mock-hero">
+        <div class="mock-hero-text">
+          <div class="mock-h1-sm">精選好物<br>品味生活</div>
+          <div class="mock-p-sm">探索我們精心挑選的商品，從生活用品到科技配件，應有盡有。</div>
+          <div class="mock-btn-sm">立即選購 →</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;opacity:.6">
+          <div style="height:8px;background:var(--border);border-radius:2px;width:80%"></div>
+          <div style="height:8px;background:var(--border);border-radius:2px;width:60%"></div>
+          <div style="height:8px;background:var(--border);border-radius:2px;width:70%"></div>
+        </div>
+      </div>
+      <div class="mock-products">
+        <div class="mock-prod-title">精選商品</div>
+        <div class="mock-grid">
+          <div class="mock-card">
+            <div class="mock-card-img bg1">💻</div>
+            <div class="mock-card-body">
+              <div class="mock-card-name">MacBook Air</div>
+              <div class="mock-card-price">$35,900</div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-img bg2">🎧</div>
+            <div class="mock-card-body">
+              <div class="mock-card-name">AirPods Pro</div>
+              <div class="mock-card-price">$7,490</div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-img bg3">📱</div>
+            <div class="mock-card-body">
+              <div class="mock-card-name">iPhone 15</div>
+              <div class="mock-card-price">$29,900</div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-img bg4">⌨️</div>
+            <div class="mock-card-body">
+              <div class="mock-card-name">Magic Keyboard</div>
+              <div class="mock-card-price">$3,290</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="background:var(--surface)">
+  <div class="section-label" data-num="01">Features</div>
+  <div class="section-title">功能介紹</div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🏠</div>
+      <div class="feature-title">首頁</div>
+      <div class="feature-desc">精選商品展示、品牌形象呈現，自動導向電商首頁。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛍️</div>
+      <div class="feature-title">商品列表</div>
+      <div class="feature-desc">從資料庫讀取 Product Model，以網格卡片方式呈現，含商品圖片與價格。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👤</div>
+      <div class="feature-title">會員頁面</div>
+      <div class="feature-desc">會員專區入口，可延伸為登入/註冊功能。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚙️</div>
+      <div class="feature-title">Django Admin</div>
+      <div class="feature-desc">內建後台管理，可新增、編輯、刪除商品，無需另外開發 CMS。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚀</div>
+      <div class="feature-title">Railway 部署</div>
+      <div class="feature-desc">內含 Procfile、railway.json 設定，可一鍵部署至 Railway 雲端平台。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-title">自訂樣式</div>
+      <div class="feature-desc">使用 Google Fonts（Noto Sans TC、Outfit）+ Whitenoise 靜態檔案管理。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ROUTES -->
+<section id="routes" class="routes-section">
+  <div class="section-label" data-num="02">Routes</div>
+  <div class="section-title">路由對照表</div>
+  <table class="route-table">
+    <thead>
+      <tr>
+        <th>路徑</th>
+        <th>Method</th>
+        <th>說明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="route-path">/</td>
+        <td><span class="route-method method-get">GET</span></td>
+        <td class="route-desc">自動導向 /ecommerce/</td>
+      </tr>
+      <tr>
+        <td class="route-path">/ecommerce/</td>
+        <td><span class="route-method method-get">GET</span></td>
+        <td class="route-desc">電商首頁（歡迎頁）</td>
+      </tr>
+      <tr>
+        <td class="route-path">/ecommerce/home/</td>
+        <td><span class="route-method method-get">GET</span></td>
+        <td class="route-desc">商品首頁（精選商品卡片展示）</td>
+      </tr>
+      <tr>
+        <td class="route-path">/ecommerce/product/</td>
+        <td><span class="route-method method-get">GET</span></td>
+        <td class="route-desc">商品列表（從資料庫讀取 Product）</td>
+      </tr>
+      <tr>
+        <td class="route-path">/ecommerce/member/</td>
+        <td><span class="route-method method-get">GET</span></td>
+        <td class="route-desc">會員頁面</td>
+      </tr>
+      <tr>
+        <td class="route-path">/admin/</td>
+        <td><span class="route-method method-admin">ADMIN</span></td>
+        <td class="route-desc">Django 後台管理介面</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- TECH STACK -->
+<section id="tech" style="background:var(--surface)">
+  <div class="section-label" data-num="03">Tech Stack</div>
+  <div class="section-title">技術棧</div>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-icon">🐍</div>
+      <div>
+        <div class="tech-name">Python</div>
+        <div class="tech-ver">3.12</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">🦄</div>
+      <div>
+        <div class="tech-name">Django</div>
+        <div class="tech-ver">6.0</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">🗄️</div>
+      <div>
+        <div class="tech-name">SQLite</div>
+        <div class="tech-ver">開發資料庫</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">⚡</div>
+      <div>
+        <div class="tech-name">Gunicorn</div>
+        <div class="tech-ver">WSGI Server</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">📦</div>
+      <div>
+        <div class="tech-name">Whitenoise</div>
+        <div class="tech-ver">靜態檔案</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">🚂</div>
+      <div>
+        <div class="tech-name">Railway</div>
+        <div class="tech-ver">雲端部署</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="section-label" data-num="04">Install</div>
+  <div class="section-title">本地運行</div>
+  <div class="install-steps">
+    <div class="install-step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <div class="step-title">Clone 專案</div>
+        <div class="code-block">
+          <span class="cmd">git clone</span> https://github.com/Tai-Ju/django-practice.git<br>
+          <span class="cmd">cd</span> django-practice
+        </div>
+      </div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <div class="step-title">建立虛擬環境並安裝依賴</div>
+        <div class="code-block">
+          <span class="cmd">python</span> -m venv .venv<br>
+          .venv\Scripts\activate &nbsp;<span class="comment"># Windows</span><br>
+          <span class="comment"># source .venv/bin/activate &nbsp;# macOS/Linux</span><br><br>
+          <span class="cmd">pip install</span> <span class="flag">-r</span> requirements.txt
+        </div>
+      </div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <div class="step-title">資料庫遷移</div>
+        <div class="code-block">
+          <span class="cmd">python</span> manage.py migrate
+        </div>
+      </div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <div class="step-title">建立管理員帳號（選填）</div>
+        <div class="code-block">
+          <span class="cmd">python</span> manage.py createsuperuser
+        </div>
+      </div>
+    </div>
+    <div class="install-step">
+      <div class="step-num">05</div>
+      <div class="step-body">
+        <div class="step-title">啟動開發伺服器</div>
+        <div class="code-block">
+          <span class="cmd">python</span> manage.py runserver<br><br>
+          <span class="comment"># 開啟瀏覽器：http://127.0.0.1:8000/</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <div class="footer-name">Tai-Ju Liu</div>
+    <div class="footer-sub">Django Practice · 電商小站 · 2025</div>
+  </div>
+  <div class="footer-links">
+    <a href="https://github.com/Tai-Ju" class="footer-link" target="_blank">GitHub</a>
+    <a href="https://github.com/Tai-Ju/django-practice" class="footer-link" target="_blank">Repo</a>
+    <a href="https://lulu.lufolio.dev" class="footer-link" target="_blank">Portfolio</a>
+  </div>
+</footer>
+
+<script>
+// scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feature-card, .tech-card, .install-step, .stat').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
