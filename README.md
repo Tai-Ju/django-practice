@@ -1,6 +1,7 @@
 # 電商小站 (Django Part1)
 
 以 Django 6 打造的簡易電商前端專案，包含首頁、商品列表、會員頁等，適合作為 Django 入門練習。
+
 🌐 **GitHub Page 預覽**：[tai-ju.github.io/django-practice](https://tai-ju.github.io/django-practice/)
 
 ## 功能
