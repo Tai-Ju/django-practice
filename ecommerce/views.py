@@ -1,11 +1,10 @@
 from datetime import datetime
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Product
 
 # Create your views here.
-def hello(request):
-    return HttpResponse("Hello,World!")
+
 def home(request):
     context = {
         "title": "歡迎頁面",
@@ -55,14 +54,54 @@ def home2(request):
     }
     return render(request, "home2.html", context)
     
-def member(request):
-    return render(request, "member.html")
 
 def product(request):
-    # products = Product.objects.all()
-    products = Product.objects.get(id=3)
-
+    if request.method == "GET":
+        q = request.GET.get("q")
+        if q:
+            products = Product.objects.filter(name__icontains=q)
+        else:
+            products = Product.objects.all()
+    else:
+        products = Product.objects.all()
+    if request.method == "POST":
+        name = request.POST.get("name")
+        price = request.POST.get("price")
+        description = request.POST.get("description")
+        Product.objects.create(name=name, price=price, description=description)
+        return redirect("ecommerce:product")
+   
     context = {
         "products": products,
     }
     return render(request, "product.html", context)
+
+def delete_product(request, product_id):
+    product = Product.objects.get(id=product_id)
+    product.delete()
+    return redirect("ecommerce:product")    
+
+def edit_product(request, product_id):
+    if request.method == "POST":
+        product = Product.objects.get(id=product_id)
+        product.name = request.POST.get("name")
+        product.price = request.POST.get("price")
+        product.description = request.POST.get("description")
+        product.save()
+        return redirect("ecommerce:product")    
+    else:
+        product = Product.objects.get(id=product_id)
+        context = {
+            "product": product,
+        }
+        return render(request, "edit_product.html", context)
+
+def update_product(request, product_id):
+    product = Product.objects.get(id=product_id)
+    if request.method == "POST":
+        product.name = request.POST.get("name", product.name) or product.name
+        product.price = request.POST.get("price") or product.price
+        product.description = request.POST.get("description", "")
+        product.save()
+        return redirect("ecommerce:product")
+    return render(request, "edit_product.html", {"product": product})  

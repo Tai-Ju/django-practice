@@ -8,18 +8,26 @@
 
     <div class="product-grid">
  
+        {% for product in products %}
         <article class="product-card">
             <div class="product-card-placeholder">🛒</div>
             <div class="product-card-body">
-                <h2>{{ products.name }}</h2>
-                <p class="description">{{ products.description }}</p>
+                <h2>{{ product.name }}</h2>
+                <p class="description">{{ product.description }}</p>
                 <div class="meta">
-                    <span class="price">NT$ {{ products.price }}</span>
-                    <span class="date">{{ products.created_at|date:"Y/m/d" }}</span>
+                    <span class="price">NT$ {{ product.price }}</span>
+                    <span class="date">{{ product.created_at|date:"Y/m/d" }}</span>
                 </div>
             </div>
+            <form method="POST" action="{% url 'ecommerce:delete_product' product.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">刪除</button>
+                </form>
+            <a href="{% url 'ecommerce:edit_product' product.id %}" class="btn btn-primary">編輯</a>
+
         </article>
-        
+        {% empty %}
+            <p class="page-subtitle" style="grid-column: 1/-1;">尚無商品。</p>
+        {% endfor %}
     </div>
-</div>
 {% endblock %}

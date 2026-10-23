@@ -2,18 +2,40 @@
 {% load static %}
 
 {% block content %}
-<div class="container">
-    <h1 class="title">{{ title }}</h1>
-    <p class="subtitle">{{ subtitle }}</p>
-    <img src="{% static 'image/'|add:image %}">
-    <div class="products">
-        {% for product in products %}
-            <div class="product">
-                <img src="{% static 'image/'|add:product.image %}">
-                <h2>{{ product.name }}</h2>
-                <p>{{ product.price }}</p>
+<div class="container home-page">
+    <section class="home-hero">
+        <h1 class="home-title">歡迎來到電商小站</h1>
+        <p class="home-subtitle">管理商品、搜尋與新增，一站完成</p>
+        <a href="{% url 'ecommerce:product' %}" class="btn btn-primary">
+            <span>前往商品列表</span>
+        </a>
+    </section>
+
+    <section class="home-search">
+        <form method="GET" action="{% url 'ecommerce:product' %}" class="search-form">
+            <input type="text" name="q" placeholder="搜尋商品名稱…" class="search-input" aria-label="搜尋商品">
+            <button type="submit" class="btn btn-search">搜尋</button>
+        </form>
+    </section>
+
+    <section class="home-add-product">
+        <h2 class="section-title">新增商品</h2>
+        <form method="POST" action="{% url 'ecommerce:product' %}" class="form-card">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_name">商品名稱</label>
+                <input type="text" name="name" id="id_name" placeholder="例：經典白襯衫" required>
             </div>
-        {% endfor %}
-    </div>
+            <div class="form-group">
+                <label for="id_price">價格（NT$）</label>
+                <input type="number" name="price" id="id_price" placeholder="0" min="0" step="1" required>
+            </div>
+            <div class="form-group">
+                <label for="id_description">商品描述</label>
+                <textarea name="description" id="id_description" placeholder="簡短描述商品特色…" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-submit">新增商品</button>
+        </form>
+    </section>
 </div>
 {% endblock %}

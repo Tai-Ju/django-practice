@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container home-page">
+    <h1 class="page-title">編輯商品</h1>
+    <form method="POST" action="{% url 'ecommerce:update_product' product.id %}" class="form-card">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_name">商品名稱</label>
+            <input type="text" name="name" id="id_name" value="{{ product.name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="id_price">價格（NT$）</label>
+            <input type="number" name="price" id="id_price" value="{{ product.price }}" min="0" step="1" required>
+        </div>
+        <div class="form-group">
+            <label for="id_description">商品描述</label>
+            <textarea name="description" id="id_description" rows="3">{{ product.description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-submit">儲存</button>
+    </form>
+    <p style="margin-top: 1rem;">
+        <a href="{% url 'ecommerce:product' %}" class="btn btn-primary">取消</a>
+    </p>
+</div>
+{% endblock %}
